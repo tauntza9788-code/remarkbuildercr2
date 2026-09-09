@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>CR2 Remark Builder</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --card:#FFFFFF;
+    --ink:#14202B;
+    --ink-soft:#5C6B78;
+    --line:#D3DBE1;
+    --pick:#0F5D5E;
+    --pick-soft:#E2EEEC;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Sarabun","Noto Sans Thai",system-ui,sans-serif;
+    font-size:16px;
+    line-height:1.4;
+    padding:0 16px calc(48px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:660px;margin:0 auto}
+
+  header.bar{
+    position:sticky;top:0;z-index:10;
+    background:var(--paper);
+    padding:12px 0 10px;
+    margin:0 -16px;
+    padding-left:16px;padding-right:16px;
+  }
+  .out{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 14px 12px;
+    box-shadow:0 6px 18px rgba(20,32,43,.06);
+  }
+  .out .line{
+    font-size:19px;
+    line-height:1.35;
+    letter-spacing:-.01em;
+    word-break:break-word;
+    min-height:26px;
+  }
+  .out .line.empty{color:var(--ink-soft);font-size:16px}
+  .row{display:flex;gap:8px;margin-top:12px}
+  button{font:inherit;cursor:pointer}
+  .copy{
+    flex:1;
+    background:var(--ink);color:#fff;
+    border:0;border-radius:10px;
+    padding:13px 16px;
+    font-size:16px;font-weight:600;
+    transition:background .15s ease;
+  }
+  .copy.done{background:var(--pick)}
+  .clear{
+    background:transparent;color:var(--ink-soft);
+    border:1px solid var(--line);border-radius:10px;
+    padding:13px 16px;
+  }
+
+  section{margin:22px 0 0}
+  h2{
+    display:flex;align-items:baseline;gap:8px;
+    font-size:14px;font-weight:600;color:var(--ink-soft);
+    margin:0 0 9px;
+  }
+  h2 span.n{
+    color:var(--pick);font-variant-numeric:tabular-nums;
+    font-weight:700;
+  }
+  .sub{font-size:13px;color:var(--ink-soft);margin:12px 0 7px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    background:var(--card);
+    border:1px solid var(--line);
+    color:var(--ink);
+    border-radius:999px;
+    padding:10px 15px;
+    min-height:42px;
+    font-size:15px;
+  }
+  .chip:focus-visible{outline:2px solid var(--pick);outline-offset:2px}
+  .chip[aria-pressed="true"]{
+    background:var(--pick);border-color:var(--pick);color:#fff;
+  }
+  footer{margin-top:28px;font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="bar">
+    <div class="out">
+      <div id="line" class="line empty">Tap the choices below to build your line.</div>
+      <div class="row">
+        <button class="copy" id="copyBtn">Copy line</button>
+        <button class="clear" id="clearBtn">Clear</button>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="n">1</span> Sale</h2>
+    <div class="chips" data-group="sale"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span> E-tax</h2>
+    <div class="chips" data-group="etax"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span> Discount type</h2>
+    <div class="chips" data-group="discount"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span> Remark</h2>
+    <div class="chips" data-group="power"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span> Remark</h2>
+    <div class="sub">FOP by</div>
+    <div class="chips" data-group="fop"></div>
+    <div class="sub">Recheck by</div>
+    <div class="chips" data-group="recheck"></div>
+  </section>
+
+  <footer>
+    Tap a selected choice again to remove it. Only what you pick goes into the line.
+  </footer>
+</div>
+
+<script>
+(function(){
+  var STAFF = ["S.Folk","S.Jack","S.Fah","S.Sab","S.Ploy","S.Mud","S.NF"];
+
+  var GROUPS = {
+    sale:     STAFF,
+    etax:     ["No E-tax","E-tax"],
+    discount: ["New CX-10%","Extend-15%","No Discount"],
+    power:    ["Customer prefer this power for clear","Customer prefer this power for comfortable"],
+    fop:      ["Folk","Jack","Fah","Sab","Ploy","Mud","NF"],
+    recheck:  ["Folk","Jack","Fah","Sab","Ploy","Mud","NF"]
+  };
+
+  var SEP = " / ";
+  var picked = {};
+
+  var lineEl  = document.getElementById("line");
+  var copyBtn = document.getElementById("copyBtn");
+
+  function text(){
+    var parts = [];
+    if (picked.sale)     parts.push(picked.sale);
+    if (picked.etax)     parts.push(picked.etax);
+    if (picked.discount) parts.push(picked.discount);
+    if (picked.power)    parts.push(picked.power);
+    if (picked.fop)      parts.push("FOP by " + picked.fop);
+    if (picked.recheck)  parts.push("Recheck by " + picked.recheck);
+    return parts.join(SEP);
+  }
+
+  function render(){
+    var t = text();
+    lineEl.textContent = t || "Tap the choices below to build your line.";
+    lineEl.className = "line" + (t ? "" : " empty");
+    copyBtn.textContent = "Copy line";
+    copyBtn.className = "copy";
+  }
+
+  Object.keys(GROUPS).forEach(function(g){
+    var box = document.querySelector('.chips[data-group="'+g+'"]');
+    GROUPS[g].forEach(function(v){
+      var b = document.createElement("button");
+      b.className = "chip";
+      b.type = "button";
+      b.textContent = v;
+      b.setAttribute("aria-pressed","false");
+      b.addEventListener("click", function(){
+        var on = picked[g] === v;
+        picked[g] = on ? null : v;
+        box.querySelectorAll(".chip").forEach(function(c){
+          c.setAttribute("aria-pressed", String(!on && c === b));
+        });
+        render();
+      });
+      box.appendChild(b);
+    });
+  });
+
+  function fallbackCopy(t){
+    var ta = document.createElement("textarea");
+    ta.value = t;
+    ta.setAttribute("readonly","");
+    ta.style.position = "fixed";
+    ta.style.top = "0";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, t.length);
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e){}
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function done(msg){
+    copyBtn.textContent = msg;
+    copyBtn.className = "copy done";
+    setTimeout(function(){
+      copyBtn.textContent = "Copy line";
+      copyBtn.className = "copy";
+    }, 1400);
+  }
+
+  copyBtn.addEventListener("click", function(){
+    var t = text();
+    if (!t){ done("Nothing picked yet"); return; }
+    if (navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(t).then(function(){ done("Copied"); },
+        function(){ done(fallbackCopy(t) ? "Copied" : "Press and hold the line to copy"); });
+    } else {
+      done(fallbackCopy(t) ? "Copied" : "Press and hold the line to copy");
+    }
+  });
+
+  document.getElementById("clearBtn").addEventListener("click", function(){
+    picked = {};
+    document.querySelectorAll(".chip").forEach(function(c){
+      c.setAttribute("aria-pressed","false");
+    });
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
