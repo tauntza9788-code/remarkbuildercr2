@@ -160,7 +160,7 @@
   var lineEl  = document.getElementById("line");
   var copyBtn = document.getElementById("copyBtn");
 
-   function text(){
+  function text(){
     var parts = [];
     if (picked.sale)     parts.push(picked.sale);
     if (picked.etax)     parts.push(picked.etax);
@@ -169,18 +169,23 @@
     if (picked.fop)      parts.push("FOP by " + picked.fop);
     if (picked.recheck)  parts.push("Recheck by " + picked.recheck);
     
-    // 1. รวมข้อความเข้าด้วยกันตามปกติก่อน
+    // 1. รวมข้อความเข้าด้วยกันตามปกติ
     var res = parts.join(SEP);
     
-    // 2. ลบเครื่องหมาย / ระหว่าง FOP และ Recheck ให้เหลือแค่เว้นวรรค
-    res = res.replace(/FOP by ([^\/]+) \/ Recheck by /, "FOP by $1 Recheck by ");
+    // 2. ใช้ decode เคลียร์รหัส %25%20/%20 ทุกประเภทให้กลับมาเป็นข้อความธรรมดา
+    try {
+      res = decodeURIComponent(res);
+      res = decodeURIComponent(res); // ดัก decode ซ้ำ 2 รอบเพื่อความชัวร์จาก double-encoding
+    } catch(e) {}
     
-    // 3. ป้องกันปัญหา %25%20/%20 โดยการล้างรหัสแปลกๆ ให้กลับมาเป็น / ปกติ (สำหรับส่วนอื่นๆ)
-    res = res.replace(/%25%20\/%20/g, " / ");
+    // 3. ดักล้างรหัส %25 ถ้าหากยังมีหลงเหลืออยู่
+    res = res.replace(/%2520/g, " ").replace(/%25/g, "");
+    
+    // 4. ลบเครื่องหมาย / ระหว่าง FOP และ Recheck ตามที่คุณต้องการ
+    res = res.replace(/FOP by ([^\/]+) \/ Recheck by /, "FOP by $1 Recheck by ");
     
     return res;
   }
-
   function render(){
     var t = text();
     lineEl.textContent = t || "Tap the choices below to build your line.";
