@@ -160,7 +160,7 @@
   var lineEl  = document.getElementById("line");
   var copyBtn = document.getElementById("copyBtn");
 
-  function text(){
+   function text(){
     var parts = [];
     if (picked.sale)     parts.push(picked.sale);
     if (picked.etax)     parts.push(picked.etax);
@@ -168,7 +168,17 @@
     if (picked.power)    parts.push(picked.power);
     if (picked.fop)      parts.push("FOP by " + picked.fop);
     if (picked.recheck)  parts.push("Recheck by " + picked.recheck);
-    return parts.join(SEP);
+    
+    // 1. รวมข้อความเข้าด้วยกันตามปกติก่อน
+    var res = parts.join(SEP);
+    
+    // 2. ลบเครื่องหมาย / ระหว่าง FOP และ Recheck ให้เหลือแค่เว้นวรรค
+    res = res.replace(/FOP by ([^\/]+) \/ Recheck by /, "FOP by $1 Recheck by ");
+    
+    // 3. ป้องกันปัญหา %25%20/%20 โดยการล้างรหัสแปลกๆ ให้กลับมาเป็น / ปกติ (สำหรับส่วนอื่นๆ)
+    res = res.replace(/%25%20\/%20/g, " / ");
+    
+    return res;
   }
 
   function render(){
