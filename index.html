@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CR2 Remark Builder</title>
+<style>
+  :root{
+    --paper:#EDF0F2; --card:#FFFFFF; --ink:#14202B;
+    --ink-soft:#5C6B78; --line:#D3DBE1; --pick:#0F5D5E;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Sarabun","Noto Sans Thai",system-ui,sans-serif;
+    font-size:16px; line-height:1.4;
+    padding:0 16px calc(48px + env(safe-area-inset-bottom));
+  }
+  form{max-width:660px;margin:0 auto}
+  form > input[type=radio]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  header.bar{position:sticky;top:0;z-index:10;background:var(--paper);padding:12px 0 10px}
+  .out{background:var(--card);border:1px solid var(--line);border-radius:14px;
+       padding:14px 14px 12px;box-shadow:0 6px 18px rgba(20,32,43,.06)}
+  .line{font-size:19px;line-height:1.35;letter-spacing:-.01em;word-break:break-word;min-height:26px;
+        -webkit-user-select:text;user-select:text}
+  .placeholder{color:var(--ink-soft);font-size:16px}
+  .outbox{display:none;width:100%;border:0;padding:0;margin:0;background:transparent;
+    color:var(--ink);font:inherit;font-size:19px;line-height:1.35;letter-spacing:-.01em;
+    resize:none;overflow:hidden;-webkit-user-select:text;user-select:text}
+  .outbox:focus{outline:none}
+  .outbox::placeholder{color:var(--ink-soft);font-size:16px}
+  html.js .outbox{display:block}
+  html.js .line{display:none}
+  .tok{display:none}
+  .row{display:flex;gap:8px;margin-top:12px}
+  button{font:inherit;cursor:pointer}
+  .copy{display:none;flex:1;background:var(--ink);color:#fff;border:0;border-radius:10px;
+        padding:13px 16px;font-size:16px;font-weight:600}
+  .copy.done{background:var(--pick)}
+  html.js .copy{display:block}
+  .reset{background:transparent;color:var(--ink-soft);border:1px solid var(--line);
+         border-radius:10px;padding:13px 16px}
+  html.js .reset{flex:0 0 auto}
+  html:not(.js) .reset{flex:1}
+  .hint{margin:9px 2px 0;font-size:12.5px;color:var(--ink-soft)}
+  html.js .hint{display:none}
+  section{margin:22px 0 0}
+  h2{display:flex;align-items:baseline;gap:8px;font-size:14px;font-weight:600;color:var(--ink-soft);margin:0 0 9px}
+  h2 .n{color:var(--pick);font-weight:700;font-variant-numeric:tabular-nums}
+  .sub{font-size:13px;color:var(--ink-soft);margin:12px 0 7px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{display:inline-flex}
+  .chip span{display:inline-flex;align-items:center;background:var(--card);border:1px solid var(--line);
+    color:var(--ink);border-radius:999px;padding:10px 15px;min-height:42px;font-size:15px}
+  .chip.opt-none span{color:var(--ink-soft)}
+  footer{margin-top:28px;font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+#r-sale-0:checked ~ .body label[for="r-sale-0"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-sale-1:checked ~ .body label[for="r-sale-1"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-sale-2:checked ~ .body label[for="r-sale-2"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-sale-3:checked ~ .body label[for="r-sale-3"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-sale-4:checked ~ .body label[for="r-sale-4"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-sale-5:checked ~ .body label[for="r-sale-5"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-sale-6:checked ~ .body label[for="r-sale-6"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-etax-0:checked ~ .body label[for="r-etax-0"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-etax-1:checked ~ .body label[for="r-etax-1"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-discount-0:checked ~ .body label[for="r-discount-0"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-discount-1:checked ~ .body label[for="r-discount-1"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-discount-2:checked ~ .body label[for="r-discount-2"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-warranty-0:checked ~ .body label[for="r-warranty-0"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-warranty-1:checked ~ .body label[for="r-warranty-1"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-warranty-2:checked ~ .body label[for="r-warranty-2"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-power-0:checked ~ .body label[for="r-power-0"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-power-1:checked ~ .body label[for="r-power-1"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-power-2:checked ~ .body label[for="r-power-2"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-fop-0:checked ~ .body label[for="r-fop-0"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-fop-1:checked ~ .body label[for="r-fop-1"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-fop-2:checked ~ .body label[for="r-fop-2"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-fop-3:checked ~ .body label[for="r-fop-3"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-fop-4:checked ~ .body label[for="r-fop-4"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-fop-5:checked ~ .body label[for="r-fop-5"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-fop-6:checked ~ .body label[for="r-fop-6"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-fop-7:checked ~ .body label[for="r-fop-7"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-recheck-0:checked ~ .body label[for="r-recheck-0"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-recheck-1:checked ~ .body label[for="r-recheck-1"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-recheck-2:checked ~ .body label[for="r-recheck-2"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-recheck-3:checked ~ .body label[for="r-recheck-3"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-recheck-4:checked ~ .body label[for="r-recheck-4"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-recheck-5:checked ~ .body label[for="r-recheck-5"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-recheck-6:checked ~ .body label[for="r-recheck-6"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-recheck-7:checked ~ .body label[for="r-recheck-7"] span{background:var(--pick);border-color:var(--pick);color:#fff}
+#r-sale-0:checked ~ .body #t-r-sale-0{display:inline}
+#r-sale-1:checked ~ .body #t-r-sale-1{display:inline}
+#r-sale-2:checked ~ .body #t-r-sale-2{display:inline}
+#r-sale-3:checked ~ .body #t-r-sale-3{display:inline}
+#r-sale-4:checked ~ .body #t-r-sale-4{display:inline}
+#r-sale-5:checked ~ .body #t-r-sale-5{display:inline}
+#r-sale-6:checked ~ .body #t-r-sale-6{display:inline}
+#r-etax-0:checked ~ .body #t-r-etax-0{display:inline}
+#r-etax-1:checked ~ .body #t-r-etax-1{display:inline}
+#r-discount-0:checked ~ .body #t-r-discount-0{display:inline}
+#r-discount-1:checked ~ .body #t-r-discount-1{display:inline}
+#r-discount-2:checked ~ .body #t-r-discount-2{display:inline}
+#r-warranty-0:checked ~ .body #t-r-warranty-0{display:inline}
+#r-warranty-1:checked ~ .body #t-r-warranty-1{display:inline}
+#r-power-0:checked ~ .body #t-r-power-0{display:inline}
+#r-power-1:checked ~ .body #t-r-power-1{display:inline}
+#r-fop-0:checked ~ .body #t-r-fop-0{display:inline}
+#r-fop-1:checked ~ .body #t-r-fop-1{display:inline}
+#r-fop-2:checked ~ .body #t-r-fop-2{display:inline}
+#r-fop-3:checked ~ .body #t-r-fop-3{display:inline}
+#r-fop-4:checked ~ .body #t-r-fop-4{display:inline}
+#r-fop-5:checked ~ .body #t-r-fop-5{display:inline}
+#r-fop-6:checked ~ .body #t-r-fop-6{display:inline}
+#r-recheck-0:checked ~ .body #t-r-recheck-0{display:inline}
+#r-recheck-1:checked ~ .body #t-r-recheck-1{display:inline}
+#r-recheck-2:checked ~ .body #t-r-recheck-2{display:inline}
+#r-recheck-3:checked ~ .body #t-r-recheck-3{display:inline}
+#r-recheck-4:checked ~ .body #t-r-recheck-4{display:inline}
+#r-recheck-5:checked ~ .body #t-r-recheck-5{display:inline}
+#r-recheck-6:checked ~ .body #t-r-recheck-6{display:inline}
+#r-sale-0:checked ~ .body #t-r-etax-0::before,
+#r-sale-0:checked ~ .body #t-r-etax-1::before,
+#r-sale-1:checked ~ .body #t-r-etax-0::before,
+#r-sale-1:checked ~ .body #t-r-etax-1::before,
+#r-sale-2:checked ~ .body #t-r-etax-0::before,
+#r-sale-2:checked ~ .body #t-r-etax-1::before,
+#r-sale-3:checked ~ .body #t-r-etax-0::before,
+#r-sale-3:checked ~ .body #t-r-etax-1::before,
+#r-sale-4:checked ~ .body #t-r-etax-0::before,
+#r-sale-4:checked ~ .body #t-r-etax-1::before,
+#r-sale-5:checked ~ .body #t-r-etax-0::before,
+#r-sale-5:checked ~ .body #t-r-etax-1::before,
+#r-sale-6:checked ~ .body #t-r-etax-0::before,
+#r-sale-6:checked ~ .body #t-r-etax-1::before{content:"/ "}
+#r-sale-0:checked ~ .body #t-r-discount-0::before,
+#r-sale-0:checked ~ .body #t-r-discount-1::before,
+#r-sale-0:checked ~ .body #t-r-discount-2::before,
+#r-sale-1:checked ~ .body #t-r-discount-0::before,
+#r-sale-1:checked ~ .body #t-r-discount-1::before,
+#r-sale-1:checked ~ .body #t-r-discount-2::before,
+#r-sale-2:checked ~ .body #t-r-discount-0::before,
+#r-sale-2:checked ~ .body #t-r-discount-1::before,
+#r-sale-2:checked ~ .body #t-r-discount-2::before,
+#r-sale-3:checked ~ .body #t-r-discount-0::before,
+#r-sale-3:checked ~ .body #t-r-discount-1::before,
+#r-sale-3:checked ~ .body #t-r-discount-2::before,
+#r-sale-4:checked ~ .body #t-r-discount-0::before,
+#r-sale-4:checked ~ .body #t-r-discount-1::before,
+#r-sale-4:checked ~ .body #t-r-discount-2::before,
+#r-sale-5:checked ~ .body #t-r-discount-0::before,
+#r-sale-5:checked ~ .body #t-r-discount-1::before,
+#r-sale-5:checked ~ .body #t-r-discount-2::before,
+#r-sale-6:checked ~ .body #t-r-discount-0::before,
+#r-sale-6:checked ~ .body #t-r-discount-1::before,
+#r-sale-6:checked ~ .body #t-r-discount-2::before,
+#r-etax-0:checked ~ .body #t-r-discount-0::before,
+#r-etax-0:checked ~ .body #t-r-discount-1::before,
+#r-etax-0:checked ~ .body #t-r-discount-2::before,
+#r-etax-1:checked ~ .body #t-r-discount-0::before,
+#r-etax-1:checked ~ .body #t-r-discount-1::before,
+#r-etax-1:checked ~ .body #t-r-discount-2::before{content:"/ "}
+#r-sale-0:checked ~ .body #t-r-warranty-0::before,
+#r-sale-0:checked ~ .body #t-r-warranty-1::before,
+#r-sale-1:checked ~ .body #t-r-warranty-0::before,
+#r-sale-1:checked ~ .body #t-r-warranty-1::before,
+#r-sale-2:checked ~ .body #t-r-warranty-0::before,
+#r-sale-2:checked ~ .body #t-r-warranty-1::before,
+#r-sale-3:checked ~ .body #t-r-warranty-0::before,
+#r-sale-3:checked ~ .body #t-r-warranty-1::before,
+#r-sale-4:checked ~ .body #t-r-warranty-0::before,
+#r-sale-4:checked ~ .body #t-r-warranty-1::before,
+#r-sale-5:checked ~ .body #t-r-warranty-0::before,
+#r-sale-5:checked ~ .body #t-r-warranty-1::before,
+#r-sale-6:checked ~ .body #t-r-warranty-0::before,
+#r-sale-6:checked ~ .body #t-r-warranty-1::before,
+#r-etax-0:checked ~ .body #t-r-warranty-0::before,
+#r-etax-0:checked ~ .body #t-r-warranty-1::before,
+#r-etax-1:checked ~ .body #t-r-warranty-0::before,
+#r-etax-1:checked ~ .body #t-r-warranty-1::before,
+#r-discount-0:checked ~ .body #t-r-warranty-0::before,
+#r-discount-0:checked ~ .body #t-r-warranty-1::before,
+#r-discount-1:checked ~ .body #t-r-warranty-0::before,
+#r-discount-1:checked ~ .body #t-r-warranty-1::before,
+#r-discount-2:checked ~ .body #t-r-warranty-0::before,
+#r-discount-2:checked ~ .body #t-r-warranty-1::before{content:"/ "}
+#r-sale-0:checked ~ .body #t-r-power-0::before,
+#r-sale-0:checked ~ .body #t-r-power-1::before,
+#r-sale-1:checked ~ .body #t-r-power-0::before,
+#r-sale-1:checked ~ .body #t-r-power-1::before,
+#r-sale-2:checked ~ .body #t-r-power-0::before,
+#r-sale-2:checked ~ .body #t-r-power-1::before,
+#r-sale-3:checked ~ .body #t-r-power-0::before,
+#r-sale-3:checked ~ .body #t-r-power-1::before,
+#r-sale-4:checked ~ .body #t-r-power-0::before,
+#r-sale-4:checked ~ .body #t-r-power-1::before,
+#r-sale-5:checked ~ .body #t-r-power-0::before,
+#r-sale-5:checked ~ .body #t-r-power-1::before,
+#r-sale-6:checked ~ .body #t-r-power-0::before,
+#r-sale-6:checked ~ .body #t-r-power-1::before,
+#r-etax-0:checked ~ .body #t-r-power-0::before,
+#r-etax-0:checked ~ .body #t-r-power-1::before,
+#r-etax-1:checked ~ .body #t-r-power-0::before,
+#r-etax-1:checked ~ .body #t-r-power-1::before,
+#r-discount-0:checked ~ .body #t-r-power-0::before,
+#r-discount-0:checked ~ .body #t-r-power-1::before,
+#r-discount-1:checked ~ .body #t-r-power-0::before,
+#r-discount-1:checked ~ .body #t-r-power-1::before,
+#r-discount-2:checked ~ .body #t-r-power-0::before,
+#r-discount-2:checked ~ .body #t-r-power-1::before,
+#r-warranty-0:checked ~ .body #t-r-power-0::before,
+#r-warranty-0:checked ~ .body #t-r-power-1::before,
+#r-warranty-1:checked ~ .body #t-r-power-0::before,
+#r-warranty-1:checked ~ .body #t-r-power-1::before{content:"/ "}
+#r-sale-0:checked ~ .body #t-r-fop-0::before,
+#r-sale-0:checked ~ .body #t-r-fop-1::before,
+#r-sale-0:checked ~ .body #t-r-fop-2::before,
+#r-sale-0:checked ~ .body #t-r-fop-3::before,
+#r-sale-0:checked ~ .body #t-r-fop-4::before,
+#r-sale-0:checked ~ .body #t-r-fop-5::before,
+#r-sale-0:checked ~ .body #t-r-fop-6::before,
+#r-sale-1:checked ~ .body #t-r-fop-0::before,
+#r-sale-1:checked ~ .body #t-r-fop-1::before,
+#r-sale-1:checked ~ .body #t-r-fop-2::before,
+#r-sale-1:checked ~ .body #t-r-fop-3::before,
+#r-sale-1:checked ~ .body #t-r-fop-4::before,
+#r-sale-1:checked ~ .body #t-r-fop-5::before,
+#r-sale-1:checked ~ .body #t-r-fop-6::before,
+#r-sale-2:checked ~ .body #t-r-fop-0::before,
+#r-sale-2:checked ~ .body #t-r-fop-1::before,
+#r-sale-2:checked ~ .body #t-r-fop-2::before,
+#r-sale-2:checked ~ .body #t-r-fop-3::before,
+#r-sale-2:checked ~ .body #t-r-fop-4::before,
+#r-sale-2:checked ~ .body #t-r-fop-5::before,
+#r-sale-2:checked ~ .body #t-r-fop-6::before,
+#r-sale-3:checked ~ .body #t-r-fop-0::before,
+#r-sale-3:checked ~ .body #t-r-fop-1::before,
+#r-sale-3:checked ~ .body #t-r-fop-2::before,
+#r-sale-3:checked ~ .body #t-r-fop-3::before,
+#r-sale-3:checked ~ .body #t-r-fop-4::before,
+#r-sale-3:checked ~ .body #t-r-fop-5::before,
+#r-sale-3:checked ~ .body #t-r-fop-6::before,
+#r-sale-4:checked ~ .body #t-r-fop-0::before,
+#r-sale-4:checked ~ .body #t-r-fop-1::before,
+#r-sale-4:checked ~ .body #t-r-fop-2::before,
+#r-sale-4:checked ~ .body #t-r-fop-3::before,
+#r-sale-4:checked ~ .body #t-r-fop-4::before,
+#r-sale-4:checked ~ .body #t-r-fop-5::before,
+#r-sale-4:checked ~ .body #t-r-fop-6::before,
+#r-sale-5:checked ~ .body #t-r-fop-0::before,
+#r-sale-5:checked ~ .body #t-r-fop-1::before,
+#r-sale-5:checked ~ .body #t-r-fop-2::before,
+#r-sale-5:checked ~ .body #t-r-fop-3::before,
+#r-sale-5:checked ~ .body #t-r-fop-4::before,
+#r-sale-5:checked ~ .body #t-r-fop-5::before,
+#r-sale-5:checked ~ .body #t-r-fop-6::before,
+#r-sale-6:checked ~ .body #t-r-fop-0::before,
+#r-sale-6:checked ~ .body #t-r-fop-1::before,
+#r-sale-6:checked ~ .body #t-r-fop-2::before,
+#r-sale-6:checked ~ .body #t-r-fop-3::before,
+#r-sale-6:checked ~ .body #t-r-fop-4::before,
+#r-sale-6:checked ~ .body #t-r-fop-5::before,
+#r-sale-6:checked ~ .body #t-r-fop-6::before,
+#r-etax-0:checked ~ .body #t-r-fop-0::before,
+#r-etax-0:checked ~ .body #t-r-fop-1::before,
+#r-etax-0:checked ~ .body #t-r-fop-2::before,
+#r-etax-0:checked ~ .body #t-r-fop-3::before,
+#r-etax-0:checked ~ .body #t-r-fop-4::before,
+#r-etax-0:checked ~ .body #t-r-fop-5::before,
+#r-etax-0:checked ~ .body #t-r-fop-6::before,
+#r-etax-1:checked ~ .body #t-r-fop-0::before,
+#r-etax-1:checked ~ .body #t-r-fop-1::before,
+#r-etax-1:checked ~ .body #t-r-fop-2::before,
+#r-etax-1:checked ~ .body #t-r-fop-3::before,
+#r-etax-1:checked ~ .body #t-r-fop-4::before,
+#r-etax-1:checked ~ .body #t-r-fop-5::before,
+#r-etax-1:checked ~ .body #t-r-fop-6::before,
+#r-discount-0:checked ~ .body #t-r-fop-0::before,
+#r-discount-0:checked ~ .body #t-r-fop-1::before,
+#r-discount-0:checked ~ .body #t-r-fop-2::before,
+#r-discount-0:checked ~ .body #t-r-fop-3::before,
+#r-discount-0:checked ~ .body #t-r-fop-4::before,
+#r-discount-0:checked ~ .body #t-r-fop-5::before,
+#r-discount-0:checked ~ .body #t-r-fop-6::before,
+#r-discount-1:checked ~ .body #t-r-fop-0::before,
+#r-discount-1:checked ~ .body #t-r-fop-1::before,
+#r-discount-1:checked ~ .body #t-r-fop-2::before,
+#r-discount-1:checked ~ .body #t-r-fop-3::before,
+#r-discount-1:checked ~ .body #t-r-fop-4::before,
+#r-discount-1:checked ~ .body #t-r-fop-5::before,
+#r-discount-1:checked ~ .body #t-r-fop-6::before,
+#r-discount-2:checked ~ .body #t-r-fop-0::before,
+#r-discount-2:checked ~ .body #t-r-fop-1::before,
+#r-discount-2:checked ~ .body #t-r-fop-2::before,
+#r-discount-2:checked ~ .body #t-r-fop-3::before,
+#r-discount-2:checked ~ .body #t-r-fop-4::before,
+#r-discount-2:checked ~ .body #t-r-fop-5::before,
+#r-discount-2:checked ~ .body #t-r-fop-6::before,
+#r-warranty-0:checked ~ .body #t-r-fop-0::before,
+#r-warranty-0:checked ~ .body #t-r-fop-1::before,
+#r-warranty-0:checked ~ .body #t-r-fop-2::before,
+#r-warranty-0:checked ~ .body #t-r-fop-3::before,
+#r-warranty-0:checked ~ .body #t-r-fop-4::before,
+#r-warranty-0:checked ~ .body #t-r-fop-5::before,
+#r-warranty-0:checked ~ .body #t-r-fop-6::before,
+#r-warranty-1:checked ~ .body #t-r-fop-0::before,
+#r-warranty-1:checked ~ .body #t-r-fop-1::before,
+#r-warranty-1:checked ~ .body #t-r-fop-2::before,
+#r-warranty-1:checked ~ .body #t-r-fop-3::before,
+#r-warranty-1:checked ~ .body #t-r-fop-4::before,
+#r-warranty-1:checked ~ .body #t-r-fop-5::before,
+#r-warranty-1:checked ~ .body #t-r-fop-6::before,
+#r-power-0:checked ~ .body #t-r-fop-0::before,
+#r-power-0:checked ~ .body #t-r-fop-1::before,
+#r-power-0:checked ~ .body #t-r-fop-2::before,
+#r-power-0:checked ~ .body #t-r-fop-3::before,
+#r-power-0:checked ~ .body #t-r-fop-4::before,
+#r-power-0:checked ~ .body #t-r-fop-5::before,
+#r-power-0:checked ~ .body #t-r-fop-6::before,
+#r-power-1:checked ~ .body #t-r-fop-0::before,
+#r-power-1:checked ~ .body #t-r-fop-1::before,
+#r-power-1:checked ~ .body #t-r-fop-2::before,
+#r-power-1:checked ~ .body #t-r-fop-3::before,
+#r-power-1:checked ~ .body #t-r-fop-4::before,
+#r-power-1:checked ~ .body #t-r-fop-5::before,
+#r-power-1:checked ~ .body #t-r-fop-6::before{content:"/ "}
+#r-sale-0:checked ~ .body #t-r-recheck-0::before,
+#r-sale-0:checked ~ .body #t-r-recheck-1::before,
+#r-sale-0:checked ~ .body #t-r-recheck-2::before,
+#r-sale-0:checked ~ .body #t-r-recheck-3::before,
+#r-sale-0:checked ~ .body #t-r-recheck-4::before,
+#r-sale-0:checked ~ .body #t-r-recheck-5::before,
+#r-sale-0:checked ~ .body #t-r-recheck-6::before,
+#r-sale-1:checked ~ .body #t-r-recheck-0::before,
+#r-sale-1:checked ~ .body #t-r-recheck-1::before,
+#r-sale-1:checked ~ .body #t-r-recheck-2::before,
+#r-sale-1:checked ~ .body #t-r-recheck-3::before,
+#r-sale-1:checked ~ .body #t-r-recheck-4::before,
+#r-sale-1:checked ~ .body #t-r-recheck-5::before,
+#r-sale-1:checked ~ .body #t-r-recheck-6::before,
+#r-sale-2:checked ~ .body #t-r-recheck-0::before,
+#r-sale-2:checked ~ .body #t-r-recheck-1::before,
+#r-sale-2:checked ~ .body #t-r-recheck-2::before,
+#r-sale-2:checked ~ .body #t-r-recheck-3::before,
+#r-sale-2:checked ~ .body #t-r-recheck-4::before,
+#r-sale-2:checked ~ .body #t-r-recheck-5::before,
+#r-sale-2:checked ~ .body #t-r-recheck-6::before,
+#r-sale-3:checked ~ .body #t-r-recheck-0::before,
+#r-sale-3:checked ~ .body #t-r-recheck-1::before,
+#r-sale-3:checked ~ .body #t-r-recheck-2::before,
+#r-sale-3:checked ~ .body #t-r-recheck-3::before,
+#r-sale-3:checked ~ .body #t-r-recheck-4::before,
+#r-sale-3:checked ~ .body #t-r-recheck-5::before,
+#r-sale-3:checked ~ .body #t-r-recheck-6::before,
+#r-sale-4:checked ~ .body #t-r-recheck-0::before,
+#r-sale-4:checked ~ .body #t-r-recheck-1::before,
+#r-sale-4:checked ~ .body #t-r-recheck-2::before,
+#r-sale-4:checked ~ .body #t-r-recheck-3::before,
+#r-sale-4:checked ~ .body #t-r-recheck-4::before,
+#r-sale-4:checked ~ .body #t-r-recheck-5::before,
+#r-sale-4:checked ~ .body #t-r-recheck-6::before,
+#r-sale-5:checked ~ .body #t-r-recheck-0::before,
+#r-sale-5:checked ~ .body #t-r-recheck-1::before,
+#r-sale-5:checked ~ .body #t-r-recheck-2::before,
+#r-sale-5:checked ~ .body #t-r-recheck-3::before,
+#r-sale-5:checked ~ .body #t-r-recheck-4::before,
+#r-sale-5:checked ~ .body #t-r-recheck-5::before,
+#r-sale-5:checked ~ .body #t-r-recheck-6::before,
+#r-sale-6:checked ~ .body #t-r-recheck-0::before,
+#r-sale-6:checked ~ .body #t-r-recheck-1::before,
+#r-sale-6:checked ~ .body #t-r-recheck-2::before,
+#r-sale-6:checked ~ .body #t-r-recheck-3::before,
+#r-sale-6:checked ~ .body #t-r-recheck-4::before,
+#r-sale-6:checked ~ .body #t-r-recheck-5::before,
+#r-sale-6:checked ~ .body #t-r-recheck-6::before,
+#r-etax-0:checked ~ .body #t-r-recheck-0::before,
+#r-etax-0:checked ~ .body #t-r-recheck-1::before,
+#r-etax-0:checked ~ .body #t-r-recheck-2::before,
+#r-etax-0:checked ~ .body #t-r-recheck-3::before,
+#r-etax-0:checked ~ .body #t-r-recheck-4::before,
+#r-etax-0:checked ~ .body #t-r-recheck-5::before,
+#r-etax-0:checked ~ .body #t-r-recheck-6::before,
+#r-etax-1:checked ~ .body #t-r-recheck-0::before,
+#r-etax-1:checked ~ .body #t-r-recheck-1::before,
+#r-etax-1:checked ~ .body #t-r-recheck-2::before,
+#r-etax-1:checked ~ .body #t-r-recheck-3::before,
+#r-etax-1:checked ~ .body #t-r-recheck-4::before,
+#r-etax-1:checked ~ .body #t-r-recheck-5::before,
+#r-etax-1:checked ~ .body #t-r-recheck-6::before,
+#r-discount-0:checked ~ .body #t-r-recheck-0::before,
+#r-discount-0:checked ~ .body #t-r-recheck-1::before,
+#r-discount-0:checked ~ .body #t-r-recheck-2::before,
+#r-discount-0:checked ~ .body #t-r-recheck-3::before,
+#r-discount-0:checked ~ .body #t-r-recheck-4::before,
+#r-discount-0:checked ~ .body #t-r-recheck-5::before,
+#r-discount-0:checked ~ .body #t-r-recheck-6::before,
+#r-discount-1:checked ~ .body #t-r-recheck-0::before,
+#r-discount-1:checked ~ .body #t-r-recheck-1::before,
+#r-discount-1:checked ~ .body #t-r-recheck-2::before,
+#r-discount-1:checked ~ .body #t-r-recheck-3::before,
+#r-discount-1:checked ~ .body #t-r-recheck-4::before,
+#r-discount-1:checked ~ .body #t-r-recheck-5::before,
+#r-discount-1:checked ~ .body #t-r-recheck-6::before,
+#r-discount-2:checked ~ .body #t-r-recheck-0::before,
+#r-discount-2:checked ~ .body #t-r-recheck-1::before,
+#r-discount-2:checked ~ .body #t-r-recheck-2::before,
+#r-discount-2:checked ~ .body #t-r-recheck-3::before,
+#r-discount-2:checked ~ .body #t-r-recheck-4::before,
+#r-discount-2:checked ~ .body #t-r-recheck-5::before,
+#r-discount-2:checked ~ .body #t-r-recheck-6::before,
+#r-warranty-0:checked ~ .body #t-r-recheck-0::before,
+#r-warranty-0:checked ~ .body #t-r-recheck-1::before,
+#r-warranty-0:checked ~ .body #t-r-recheck-2::before,
+#r-warranty-0:checked ~ .body #t-r-recheck-3::before,
+#r-warranty-0:checked ~ .body #t-r-recheck-4::before,
+#r-warranty-0:checked ~ .body #t-r-recheck-5::before,
+#r-warranty-0:checked ~ .body #t-r-recheck-6::before,
+#r-warranty-1:checked ~ .body #t-r-recheck-0::before,
+#r-warranty-1:checked ~ .body #t-r-recheck-1::before,
+#r-warranty-1:checked ~ .body #t-r-recheck-2::before,
+#r-warranty-1:checked ~ .body #t-r-recheck-3::before,
+#r-warranty-1:checked ~ .body #t-r-recheck-4::before,
+#r-warranty-1:checked ~ .body #t-r-recheck-5::before,
+#r-warranty-1:checked ~ .body #t-r-recheck-6::before,
+#r-power-0:checked ~ .body #t-r-recheck-0::before,
+#r-power-0:checked ~ .body #t-r-recheck-1::before,
+#r-power-0:checked ~ .body #t-r-recheck-2::before,
+#r-power-0:checked ~ .body #t-r-recheck-3::before,
+#r-power-0:checked ~ .body #t-r-recheck-4::before,
+#r-power-0:checked ~ .body #t-r-recheck-5::before,
+#r-power-0:checked ~ .body #t-r-recheck-6::before,
+#r-power-1:checked ~ .body #t-r-recheck-0::before,
+#r-power-1:checked ~ .body #t-r-recheck-1::before,
+#r-power-1:checked ~ .body #t-r-recheck-2::before,
+#r-power-1:checked ~ .body #t-r-recheck-3::before,
+#r-power-1:checked ~ .body #t-r-recheck-4::before,
+#r-power-1:checked ~ .body #t-r-recheck-5::before,
+#r-power-1:checked ~ .body #t-r-recheck-6::before,
+#r-fop-0:checked ~ .body #t-r-recheck-0::before,
+#r-fop-0:checked ~ .body #t-r-recheck-1::before,
+#r-fop-0:checked ~ .body #t-r-recheck-2::before,
+#r-fop-0:checked ~ .body #t-r-recheck-3::before,
+#r-fop-0:checked ~ .body #t-r-recheck-4::before,
+#r-fop-0:checked ~ .body #t-r-recheck-5::before,
+#r-fop-0:checked ~ .body #t-r-recheck-6::before,
+#r-fop-1:checked ~ .body #t-r-recheck-0::before,
+#r-fop-1:checked ~ .body #t-r-recheck-1::before,
+#r-fop-1:checked ~ .body #t-r-recheck-2::before,
+#r-fop-1:checked ~ .body #t-r-recheck-3::before,
+#r-fop-1:checked ~ .body #t-r-recheck-4::before,
+#r-fop-1:checked ~ .body #t-r-recheck-5::before,
+#r-fop-1:checked ~ .body #t-r-recheck-6::before,
+#r-fop-2:checked ~ .body #t-r-recheck-0::before,
+#r-fop-2:checked ~ .body #t-r-recheck-1::before,
+#r-fop-2:checked ~ .body #t-r-recheck-2::before,
+#r-fop-2:checked ~ .body #t-r-recheck-3::before,
+#r-fop-2:checked ~ .body #t-r-recheck-4::before,
+#r-fop-2:checked ~ .body #t-r-recheck-5::before,
+#r-fop-2:checked ~ .body #t-r-recheck-6::before,
+#r-fop-3:checked ~ .body #t-r-recheck-0::before,
+#r-fop-3:checked ~ .body #t-r-recheck-1::before,
+#r-fop-3:checked ~ .body #t-r-recheck-2::before,
+#r-fop-3:checked ~ .body #t-r-recheck-3::before,
+#r-fop-3:checked ~ .body #t-r-recheck-4::before,
+#r-fop-3:checked ~ .body #t-r-recheck-5::before,
+#r-fop-3:checked ~ .body #t-r-recheck-6::before,
+#r-fop-4:checked ~ .body #t-r-recheck-0::before,
+#r-fop-4:checked ~ .body #t-r-recheck-1::before,
+#r-fop-4:checked ~ .body #t-r-recheck-2::before,
+#r-fop-4:checked ~ .body #t-r-recheck-3::before,
+#r-fop-4:checked ~ .body #t-r-recheck-4::before,
+#r-fop-4:checked ~ .body #t-r-recheck-5::before,
+#r-fop-4:checked ~ .body #t-r-recheck-6::before,
+#r-fop-5:checked ~ .body #t-r-recheck-0::before,
+#r-fop-5:checked ~ .body #t-r-recheck-1::before,
+#r-fop-5:checked ~ .body #t-r-recheck-2::before,
+#r-fop-5:checked ~ .body #t-r-recheck-3::before,
+#r-fop-5:checked ~ .body #t-r-recheck-4::before,
+#r-fop-5:checked ~ .body #t-r-recheck-5::before,
+#r-fop-5:checked ~ .body #t-r-recheck-6::before,
+#r-fop-6:checked ~ .body #t-r-recheck-0::before,
+#r-fop-6:checked ~ .body #t-r-recheck-1::before,
+#r-fop-6:checked ~ .body #t-r-recheck-2::before,
+#r-fop-6:checked ~ .body #t-r-recheck-3::before,
+#r-fop-6:checked ~ .body #t-r-recheck-4::before,
+#r-fop-6:checked ~ .body #t-r-recheck-5::before,
+#r-fop-6:checked ~ .body #t-r-recheck-6::before{content:"/ "}
+#r-fop-0:checked ~ .body #t-r-recheck-0::before,
+#r-fop-0:checked ~ .body #t-r-recheck-1::before,
+#r-fop-0:checked ~ .body #t-r-recheck-2::before,
+#r-fop-0:checked ~ .body #t-r-recheck-3::before,
+#r-fop-0:checked ~ .body #t-r-recheck-4::before,
+#r-fop-0:checked ~ .body #t-r-recheck-5::before,
+#r-fop-0:checked ~ .body #t-r-recheck-6::before,
+#r-fop-1:checked ~ .body #t-r-recheck-0::before,
+#r-fop-1:checked ~ .body #t-r-recheck-1::before,
+#r-fop-1:checked ~ .body #t-r-recheck-2::before,
+#r-fop-1:checked ~ .body #t-r-recheck-3::before,
+#r-fop-1:checked ~ .body #t-r-recheck-4::before,
+#r-fop-1:checked ~ .body #t-r-recheck-5::before,
+#r-fop-1:checked ~ .body #t-r-recheck-6::before,
+#r-fop-2:checked ~ .body #t-r-recheck-0::before,
+#r-fop-2:checked ~ .body #t-r-recheck-1::before,
+#r-fop-2:checked ~ .body #t-r-recheck-2::before,
+#r-fop-2:checked ~ .body #t-r-recheck-3::before,
+#r-fop-2:checked ~ .body #t-r-recheck-4::before,
+#r-fop-2:checked ~ .body #t-r-recheck-5::before,
+#r-fop-2:checked ~ .body #t-r-recheck-6::before,
+#r-fop-3:checked ~ .body #t-r-recheck-0::before,
+#r-fop-3:checked ~ .body #t-r-recheck-1::before,
+#r-fop-3:checked ~ .body #t-r-recheck-2::before,
+#r-fop-3:checked ~ .body #t-r-recheck-3::before,
+#r-fop-3:checked ~ .body #t-r-recheck-4::before,
+#r-fop-3:checked ~ .body #t-r-recheck-5::before,
+#r-fop-3:checked ~ .body #t-r-recheck-6::before,
+#r-fop-4:checked ~ .body #t-r-recheck-0::before,
+#r-fop-4:checked ~ .body #t-r-recheck-1::before,
+#r-fop-4:checked ~ .body #t-r-recheck-2::before,
+#r-fop-4:checked ~ .body #t-r-recheck-3::before,
+#r-fop-4:checked ~ .body #t-r-recheck-4::before,
+#r-fop-4:checked ~ .body #t-r-recheck-5::before,
+#r-fop-4:checked ~ .body #t-r-recheck-6::before,
+#r-fop-5:checked ~ .body #t-r-recheck-0::before,
+#r-fop-5:checked ~ .body #t-r-recheck-1::before,
+#r-fop-5:checked ~ .body #t-r-recheck-2::before,
+#r-fop-5:checked ~ .body #t-r-recheck-3::before,
+#r-fop-5:checked ~ .body #t-r-recheck-4::before,
+#r-fop-5:checked ~ .body #t-r-recheck-5::before,
+#r-fop-5:checked ~ .body #t-r-recheck-6::before,
+#r-fop-6:checked ~ .body #t-r-recheck-0::before,
+#r-fop-6:checked ~ .body #t-r-recheck-1::before,
+#r-fop-6:checked ~ .body #t-r-recheck-2::before,
+#r-fop-6:checked ~ .body #t-r-recheck-3::before,
+#r-fop-6:checked ~ .body #t-r-recheck-4::before,
+#r-fop-6:checked ~ .body #t-r-recheck-5::before,
+#r-fop-6:checked ~ .body #t-r-recheck-6::before{content:""}
+input:checked:not(.none) ~ .body .placeholder{display:none}
+</style>
+</head>
+<body>
+<form id="f">
+<input type="radio" name="sale" id="r-sale-0">
+<input type="radio" name="sale" id="r-sale-1">
+<input type="radio" name="sale" id="r-sale-2">
+<input type="radio" name="sale" id="r-sale-3">
+<input type="radio" name="sale" id="r-sale-4">
+<input type="radio" name="sale" id="r-sale-5">
+<input type="radio" name="sale" id="r-sale-6">
+<input type="radio" name="etax" id="r-etax-0">
+<input type="radio" name="etax" id="r-etax-1">
+<input type="radio" name="discount" id="r-discount-0">
+<input type="radio" name="discount" id="r-discount-1">
+<input type="radio" name="discount" id="r-discount-2">
+<input type="radio" name="warranty" id="r-warranty-0">
+<input type="radio" name="warranty" id="r-warranty-1">
+<input type="radio" name="warranty" id="r-warranty-2" class="none">
+<input type="radio" name="power" id="r-power-0">
+<input type="radio" name="power" id="r-power-1">
+<input type="radio" name="power" id="r-power-2" class="none">
+<input type="radio" name="fop" id="r-fop-0">
+<input type="radio" name="fop" id="r-fop-1">
+<input type="radio" name="fop" id="r-fop-2">
+<input type="radio" name="fop" id="r-fop-3">
+<input type="radio" name="fop" id="r-fop-4">
+<input type="radio" name="fop" id="r-fop-5">
+<input type="radio" name="fop" id="r-fop-6">
+<input type="radio" name="fop" id="r-fop-7" class="none">
+<input type="radio" name="recheck" id="r-recheck-0">
+<input type="radio" name="recheck" id="r-recheck-1">
+<input type="radio" name="recheck" id="r-recheck-2">
+<input type="radio" name="recheck" id="r-recheck-3">
+<input type="radio" name="recheck" id="r-recheck-4">
+<input type="radio" name="recheck" id="r-recheck-5">
+<input type="radio" name="recheck" id="r-recheck-6">
+<input type="radio" name="recheck" id="r-recheck-7" class="none">
+
+<div class="body">
+  <header class="bar">
+    <div class="out">
+      <div class="line" id="line"><span class="placeholder">Tap the choices below to build your line.</span>
+<span class="tok tok-sale" id="t-r-sale-0">S.Folk</span>
+<span class="tok tok-sale" id="t-r-sale-1">S.Jack</span>
+<span class="tok tok-sale" id="t-r-sale-2">S.Fah</span>
+<span class="tok tok-sale" id="t-r-sale-3">S.Sab</span>
+<span class="tok tok-sale" id="t-r-sale-4">S.Ploy</span>
+<span class="tok tok-sale" id="t-r-sale-5">S.Mud</span>
+<span class="tok tok-sale" id="t-r-sale-6">S.NF</span>
+<span class="tok tok-etax" id="t-r-etax-0">No E-tax</span>
+<span class="tok tok-etax" id="t-r-etax-1">E-tax</span>
+<span class="tok tok-discount" id="t-r-discount-0">New CX-10%</span>
+<span class="tok tok-discount" id="t-r-discount-1">Extend-15%</span>
+<span class="tok tok-discount" id="t-r-discount-2">No Discount</span>
+<span class="tok tok-warranty" id="t-r-warranty-0">Extended warranty-15%</span>
+<span class="tok tok-warranty" id="t-r-warranty-1">Extended Redeem</span>
+<span class="tok tok-power" id="t-r-power-0">Customer prefer this power for clear</span>
+<span class="tok tok-power" id="t-r-power-1">Customer prefer this power for comfortable</span>
+<span class="tok tok-fop" id="t-r-fop-0">FOP by Folk</span>
+<span class="tok tok-fop" id="t-r-fop-1">FOP by Jack</span>
+<span class="tok tok-fop" id="t-r-fop-2">FOP by Fah</span>
+<span class="tok tok-fop" id="t-r-fop-3">FOP by Sab</span>
+<span class="tok tok-fop" id="t-r-fop-4">FOP by Ploy</span>
+<span class="tok tok-fop" id="t-r-fop-5">FOP by Mud</span>
+<span class="tok tok-fop" id="t-r-fop-6">FOP by NF</span>
+<span class="tok tok-recheck" id="t-r-recheck-0">Recheck by Folk</span>
+<span class="tok tok-recheck" id="t-r-recheck-1">Recheck by Jack</span>
+<span class="tok tok-recheck" id="t-r-recheck-2">Recheck by Fah</span>
+<span class="tok tok-recheck" id="t-r-recheck-3">Recheck by Sab</span>
+<span class="tok tok-recheck" id="t-r-recheck-4">Recheck by Ploy</span>
+<span class="tok tok-recheck" id="t-r-recheck-5">Recheck by Mud</span>
+<span class="tok tok-recheck" id="t-r-recheck-6">Recheck by NF</span>
+      </div>
+      <textarea class="outbox" id="outText" rows="1" readonly spellcheck="false"
+        placeholder="Tap the choices below to build your line."></textarea>
+      <div class="row">
+        <button type="button" class="copy" id="copyBtn">Copy line</button>
+        <button type="reset" class="reset">Clear</button>
+      </div>
+      <p class="hint">Press and hold the line above, then choose Copy.</p>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="n">1</span> Sale</h2>
+    <div class="chips">
+      <label class="chip" for="r-sale-0"><span>S.Folk</span></label>
+      <label class="chip" for="r-sale-1"><span>S.Jack</span></label>
+      <label class="chip" for="r-sale-2"><span>S.Fah</span></label>
+      <label class="chip" for="r-sale-3"><span>S.Sab</span></label>
+      <label class="chip" for="r-sale-4"><span>S.Ploy</span></label>
+      <label class="chip" for="r-sale-5"><span>S.Mud</span></label>
+      <label class="chip" for="r-sale-6"><span>S.NF</span></label>
+    </div>
+  </section>
+  <section>
+    <h2><span class="n">2</span> E-tax</h2>
+    <div class="chips">
+      <label class="chip" for="r-etax-0"><span>No E-tax</span></label>
+      <label class="chip" for="r-etax-1"><span>E-tax</span></label>
+    </div>
+  </section>
+  <section>
+    <h2><span class="n">3</span> Discount type</h2>
+    <div class="chips">
+      <label class="chip" for="r-discount-0"><span>New CX-10%</span></label>
+      <label class="chip" for="r-discount-1"><span>Extend-15%</span></label>
+      <label class="chip" for="r-discount-2"><span>No Discount</span></label>
+    </div>
+  </section>
+  <section>
+    <h2><span class="n">4</span> Warranty</h2>
+    <div class="chips">
+      <label class="chip" for="r-warranty-0"><span>Extended warranty-15%</span></label>
+      <label class="chip" for="r-warranty-1"><span>Extended Redeem</span></label>
+      <label class="chip opt-none" for="r-warranty-2"><span>None</span></label>
+    </div>
+  </section>
+  <section>
+    <h2><span class="n">5</span> Remark</h2>
+    <div class="chips">
+      <label class="chip" for="r-power-0"><span>for clear</span></label>
+      <label class="chip" for="r-power-1"><span>for comfortable</span></label>
+      <label class="chip opt-none" for="r-power-2"><span>None</span></label>
+    </div>
+  </section>
+  <section>
+    <h2><span class="n">6</span> Remark</h2>
+    <p class="sub">FOP by</p>
+    <div class="chips">
+      <label class="chip" for="r-fop-0"><span>Folk</span></label>
+      <label class="chip" for="r-fop-1"><span>Jack</span></label>
+      <label class="chip" for="r-fop-2"><span>Fah</span></label>
+      <label class="chip" for="r-fop-3"><span>Sab</span></label>
+      <label class="chip" for="r-fop-4"><span>Ploy</span></label>
+      <label class="chip" for="r-fop-5"><span>Mud</span></label>
+      <label class="chip" for="r-fop-6"><span>NF</span></label>
+      <label class="chip opt-none" for="r-fop-7"><span>None</span></label>
+    </div>
+    <p class="sub">Recheck by</p>
+    <div class="chips">
+      <label class="chip" for="r-recheck-0"><span>Folk</span></label>
+      <label class="chip" for="r-recheck-1"><span>Jack</span></label>
+      <label class="chip" for="r-recheck-2"><span>Fah</span></label>
+      <label class="chip" for="r-recheck-3"><span>Sab</span></label>
+      <label class="chip" for="r-recheck-4"><span>Ploy</span></label>
+      <label class="chip" for="r-recheck-5"><span>Mud</span></label>
+      <label class="chip" for="r-recheck-6"><span>NF</span></label>
+      <label class="chip opt-none" for="r-recheck-7"><span>None</span></label>
+    </div>
+  </section>
+
+  <footer>Pick one per topic. Skip a topic and it stays out of the line.</footer>
+</div>
+</form>
+
+<script>
+document.documentElement.className="js";
+(function(){
+  var OPTS={"r-sale-0":"S.Folk","r-sale-1":"S.Jack","r-sale-2":"S.Fah","r-sale-3":"S.Sab","r-sale-4":"S.Ploy","r-sale-5":"S.Mud","r-sale-6":"S.NF","r-etax-0":"No E-tax","r-etax-1":"E-tax","r-discount-0":"New CX-10%","r-discount-1":"Extend-15%","r-discount-2":"No Discount","r-warranty-0":"Extended warranty-15%","r-warranty-1":"Extended Redeem","r-power-0":"Customer prefer this power for clear","r-power-1":"Customer prefer this power for comfortable","r-fop-0":"FOP by Folk","r-fop-1":"FOP by Jack","r-fop-2":"FOP by Fah","r-fop-3":"FOP by Sab","r-fop-4":"FOP by Ploy","r-fop-5":"FOP by Mud","r-fop-6":"FOP by NF","r-recheck-0":"Recheck by Folk","r-recheck-1":"Recheck by Jack","r-recheck-2":"Recheck by Fah","r-recheck-3":"Recheck by Sab","r-recheck-4":"Recheck by Ploy","r-recheck-5":"Recheck by Mud","r-recheck-6":"Recheck by NF"};
+  var btn=document.getElementById("copyBtn");
+
+  function clean(t){
+    for(var k=0;k<3 && /%[0-9A-Fa-f]{2}/.test(t);k++){
+      t=t.replace(/%[0-9A-Fa-f]{2}/g,function(m){
+        try{ return decodeURIComponent(m); }catch(e){ return m; }
+      });
+    }
+    t=t.replace(/%20/gi," ").replace(/%2F/gi,"/").replace(/%25/gi,"%");
+    return t.replace(/\u00a0/g," ").replace(/\+/g," ").replace(/[ \t\r\n]+/g," ").trim();
+  }
+  function pick(g){
+    var el=document.querySelector('input[name="'+g+'"]:checked');
+    return el ? (OPTS[el.id]||"") : "";
+  }
+  function text(){
+    var parts=[],v,i,first=["sale","etax","discount","warranty","power"];
+    for(i=0;i<first.length;i++){ v=pick(first[i]); if(v) parts.push(v); }
+    var five=[];
+    v=pick("fop"); if(v) five.push(v);
+    v=pick("recheck"); if(v) five.push(v);
+    if(five.length) parts.push(five.join(" "));
+    return clean(parts.join(" / "));
+  }
+  var box=document.getElementById("outText"), form=document.getElementById("f");
+
+  function sync(){
+    box.value=text();
+    box.rows=1;
+    box.rows=Math.min(6,Math.max(1,Math.ceil(box.scrollHeight/26)));
+    btn.textContent="Copy line"; btn.className="copy";
+  }
+  function flash(m){ btn.textContent=m; btn.className="copy done";
+    setTimeout(function(){ btn.textContent="Copy line"; btn.className="copy"; },1400); }
+
+  function copyFromBox(){
+    box.removeAttribute("readonly");
+    box.focus();
+    box.setSelectionRange(0,box.value.length);
+    var ok=false;
+    try{ ok=document.execCommand("copy"); }catch(e){}
+    box.setAttribute("readonly","readonly");
+    box.blur();
+    return ok;
+  }
+
+  btn.addEventListener("click",function(){
+    var t=box.value;
+    if(!t){ flash("Nothing picked yet"); return; }
+    if(copyFromBox()){ flash("Copied"); return; }
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(t).then(function(){ flash("Copied"); },
+        function(){ flash("Hold the text to copy"); });
+    } else { flash("Hold the text to copy"); }
+  });
+
+  form.addEventListener("change",sync);
+  form.addEventListener("reset",function(){ setTimeout(sync,0); });
+  sync();
+})();
+</script>
+</body>
+</html>
