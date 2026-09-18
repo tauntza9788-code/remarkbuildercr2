@@ -54,7 +54,7 @@
   .chip span{display:inline-flex;align-items:center;background:var(--card);border:1px solid var(--line);
     color:var(--ink);border-radius:999px;padding:10px 15px;min-height:42px;font-size:15px}
   .chip.opt-none span{color:var(--ink-soft)}
-  .chip .numfill{width:56px;margin:0 1px;border:1px solid var(--line);border-radius:6px;
+  .chip .numfill{width:62px;margin:0 1px;border:1px solid var(--line);border-radius:6px;
     padding:4px 6px;font-size:14px;text-align:center;color:var(--ink);background:#fff;font:inherit}
   .chip .numfill:focus{outline:2px solid var(--pick);outline-offset:1px}
   footer{margin-top:28px;font-size:12.5px;color:var(--ink-soft);line-height:1.5}
@@ -1976,9 +1976,9 @@ input:checked:not(.none) ~ .body .placeholder{display:none}
   <section>
     <h2><span class="n">4</span> AIS</h2>
     <div class="chips">
-      <label class="chip" for="r-discount2-0"><span>AIS-300 (<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="numfill" id="n-discount2-0" placeholder="______">)</span></label>
-      <label class="chip" for="r-discount2-1"><span>AIS-500 (<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="numfill" id="n-discount2-1" placeholder="______">)</span></label>
-      <label class="chip" for="r-discount2-2"><span>AIS-700 (<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="numfill" id="n-discount2-2" placeholder="______">)</span></label>
+      <label class="chip" for="r-discount2-0"><span>AIS-300 (AISOW<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="7" class="numfill" id="n-discount2-0" placeholder="_______">)</span></label>
+      <label class="chip" for="r-discount2-1"><span>AIS-500 (AISOW<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="7" class="numfill" id="n-discount2-1" placeholder="_______">)</span></label>
+      <label class="chip" for="r-discount2-2"><span>AIS-700 (AISOW<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="7" class="numfill" id="n-discount2-2" placeholder="_______">)</span></label>
     </div>
   </section>
   <section>
@@ -2089,7 +2089,7 @@ document.documentElement.className="js";
     if(g==="discount2"){
       var inp=document.getElementById(el.id.replace("r-","n-"));
       var v=inp ? inp.value.replace(/[^0-9]/g,"") : "";
-      return v ? (base+" ("+v+")") : base;
+      return v ? (base+" (AISOW"+v+")") : base;
     }
     return base;
   }
