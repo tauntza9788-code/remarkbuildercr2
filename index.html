@@ -54,9 +54,26 @@
   .chip span{display:inline-flex;align-items:center;background:var(--card);border:1px solid var(--line);
     color:var(--ink);border-radius:999px;padding:10px 15px;min-height:42px;font-size:15px}
   .chip.opt-none span{color:var(--ink-soft)}
+  .chip.sel span{background:var(--pick);border-color:var(--pick);color:#fff}
   .chip .numfill{width:62px;margin:0 1px;border:1px solid var(--line);border-radius:6px;
     padding:4px 6px;font-size:14px;text-align:center;color:var(--ink);background:#fff;font:inherit}
   .chip .numfill:focus{outline:2px solid var(--pick);outline-offset:1px}
+  .chip .rm{display:none;margin-left:8px;width:20px;height:20px;flex:0 0 auto;
+    border-radius:50%;border:1px solid currentColor;background:transparent;color:inherit;
+    font-size:14px;line-height:1;padding:0;cursor:pointer;align-items:center;justify-content:center}
+  html.editing .chip .rm{display:inline-flex}
+  .addrow{display:none;align-items:center;gap:6px}
+  html.editing .addrow{display:inline-flex}
+  .addrow .addtext{border:1px dashed var(--line);border-radius:999px;padding:9px 12px;
+    font-size:14px;min-width:130px;max-width:220px;background:#fff;color:var(--ink);font:inherit}
+  .addrow .addbtn{background:var(--pick);color:#fff;border:0;border-radius:999px;
+    width:36px;height:36px;font-size:18px;line-height:1;cursor:pointer;flex:0 0 auto}
+  .editbtn{display:block;width:100%;margin-top:8px;background:transparent;color:var(--pick);
+    border:1px solid var(--pick);border-radius:10px;padding:11px 16px;font-size:14px;font-weight:600}
+  html.editing .editbtn{background:var(--pick);color:#fff}
+  .resetlink{display:none;margin:10px auto 0;background:transparent;border:0;color:var(--ink-soft);
+    font-size:12.5px;text-decoration:underline;padding:4px}
+  html.editing .resetlink{display:block}
   footer{margin-top:28px;font-size:12.5px;color:var(--ink-soft);line-height:1.5}
 #r-sale-0:checked ~ .body label[for="r-sale-0"] span{background:var(--pick);border-color:var(--pick);color:#fff}
 #r-sale-1:checked ~ .body label[for="r-sale-1"] span{background:var(--pick);border-color:var(--pick);color:#fff}
@@ -1942,124 +1959,137 @@ input:checked:not(.none) ~ .body .placeholder{display:none}
         <button type="reset" class="reset">Clear</button>
       </div>
       <p class="hint">Press and hold the line above, then choose Copy.</p>
+      <button type="button" class="editbtn" id="editBtn">Edit buttons</button>
+      <button type="button" class="resetlink" id="resetBtn">Reset all customizations</button>
     </div>
   </header>
 
   <section>
     <h2><span class="n">1</span> Sale</h2>
-    <div class="chips">
-      <label class="chip" for="r-sale-0"><span>S:Folk</span></label>
-      <label class="chip" for="r-sale-1"><span>S:Jack</span></label>
-      <label class="chip" for="r-sale-2"><span>S:Fah</span></label>
-      <label class="chip" for="r-sale-3"><span>S:Sab</span></label>
-      <label class="chip" for="r-sale-4"><span>S:Ploy</span></label>
-      <label class="chip" for="r-sale-5"><span>S:Mud</span></label>
-      <label class="chip" for="r-sale-6"><span>S:NF</span></label>
-      <label class="chip opt-none" for="r-sale-7"><span>None</span></label>
+    <div class="chips" data-group="sale">
+      <label class="chip" for="r-sale-0"><span>S:Folk<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-sale-1"><span>S:Jack<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-sale-2"><span>S:Fah<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-sale-3"><span>S:Sab<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-sale-4"><span>S:Ploy<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-sale-5"><span>S:Mud<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-sale-6"><span>S:NF<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip opt-none" for="r-sale-7"><span>None<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <span class="addrow"><input type="text" class="addtext" placeholder="Add option..."><button type="button" class="addbtn">+</button></span>
     </div>
   </section>
   <section>
     <h2><span class="n">2</span> E-tax</h2>
-    <div class="chips">
-      <label class="chip" for="r-etax-0"><span>No E-Tax</span></label>
-      <label class="chip" for="r-etax-1"><span>E-Tax</span></label>
+    <div class="chips" data-group="etax">
+      <label class="chip" for="r-etax-0"><span>No E-Tax<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-etax-1"><span>E-Tax<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <span class="addrow"><input type="text" class="addtext" placeholder="Add option..."><button type="button" class="addbtn">+</button></span>
     </div>
   </section>
   <section>
     <h2><span class="n">3</span> Discount type</h2>
-    <div class="chips">
-      <label class="chip" for="r-discount-0"><span>New CX-10%</span></label>
-      <label class="chip" for="r-discount-1"><span>-10% new member</span></label>
-      <label class="chip" for="r-discount-2"><span>No Discount</span></label>
+    <div class="chips" data-group="discount">
+      <label class="chip" for="r-discount-0"><span>New CX-10%<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-discount-1"><span>-10% new member<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-discount-2"><span>No Discount<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <span class="addrow"><input type="text" class="addtext" placeholder="Add option..."><button type="button" class="addbtn">+</button></span>
     </div>
   </section>
   <section>
     <h2><span class="n">4</span> AIS</h2>
-    <div class="chips">
-      <label class="chip" for="r-discount2-0"><span>AIS-300 (AISOW<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="7" class="numfill" id="n-discount2-0" placeholder="_______">)</span></label>
-      <label class="chip" for="r-discount2-1"><span>AIS-500 (AISOW<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="7" class="numfill" id="n-discount2-1" placeholder="_______">)</span></label>
-      <label class="chip" for="r-discount2-2"><span>AIS-700 (AISOW<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="7" class="numfill" id="n-discount2-2" placeholder="_______">)</span></label>
+    <div class="chips" data-group="discount2">
+      <label class="chip" for="r-discount2-0"><span>AIS-300 (AISOW<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="7" class="numfill" id="n-discount2-0" placeholder="_______">)<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-discount2-1"><span>AIS-500 (AISOW<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="7" class="numfill" id="n-discount2-1" placeholder="_______">)<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-discount2-2"><span>AIS-700 (AISOW<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="7" class="numfill" id="n-discount2-2" placeholder="_______">)<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <span class="addrow"><input type="text" class="addtext" placeholder="Add option..."><button type="button" class="addbtn">+</button></span>
     </div>
   </section>
   <section>
     <h2><span class="n">5</span> Warranty</h2>
-    <div class="chips">
-      <label class="chip" for="r-warranty-0"><span>Extended warranty-15%</span></label>
-      <label class="chip" for="r-warranty-1"><span>-15% Extended</span></label>
-      <label class="chip" for="r-warranty-2"><span>Extended Redeem</span></label>
-      <label class="chip opt-none" for="r-warranty-3"><span>None</span></label>
+    <div class="chips" data-group="warranty">
+      <label class="chip" for="r-warranty-0"><span>Extended warranty-15%<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-warranty-1"><span>-15% Extended<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-warranty-2"><span>Extended Redeem<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip opt-none" for="r-warranty-3"><span>None<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <span class="addrow"><input type="text" class="addtext" placeholder="Add option..."><button type="button" class="addbtn">+</button></span>
     </div>
   </section>
   <section>
     <h2><span class="n">6</span> KB</h2>
-    <div class="chips">
-      <label class="chip" for="r-kb-0"><span>1st</span></label>
-      <label class="chip" for="r-kb-1"><span>No Kb</span></label>
-      <label class="chip opt-none" for="r-kb-2"><span>None</span></label>
+    <div class="chips" data-group="kb">
+      <label class="chip" for="r-kb-0"><span>1st<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-kb-1"><span>No Kb<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip opt-none" for="r-kb-2"><span>None<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <span class="addrow"><input type="text" class="addtext" placeholder="Add option..."><button type="button" class="addbtn">+</button></span>
     </div>
   </section>
   <section>
     <h2><span class="n">7</span> Remark</h2>
-    <div class="chips">
-      <label class="chip" for="r-power-0"><span>Customer prefer - for clear</span></label>
-      <label class="chip" for="r-power-1"><span>Customer prefer - for comfortable</span></label>
-      <label class="chip" for="r-power-2"><span>Customer prefer - for driving</span></label>
-      <label class="chip" for="r-power-3"><span>Customer prefer - for reading</span></label>
-      <label class="chip" for="r-power-4"><span>Customer prefer - for computer</span></label>
-      <label class="chip" for="r-power-5"><span>Customer prefer - for intermediate</span></label>
-      <label class="chip" for="r-power-6"><span>Customer request this power</span></label>
-      <label class="chip" for="r-power-7"><span>Customer prefer KB</span></label>
-      <label class="chip" for="r-power-8"><span>CX - for clear</span></label>
-      <label class="chip" for="r-power-9"><span>CX - for comfortable</span></label>
-      <label class="chip opt-none" for="r-power-10"><span>None</span></label>
+    <div class="chips" data-group="power">
+      <label class="chip" for="r-power-0"><span>Customer prefer - for clear<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-power-1"><span>Customer prefer - for comfortable<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-power-2"><span>Customer prefer - for driving<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-power-3"><span>Customer prefer - for reading<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-power-4"><span>Customer prefer - for computer<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-power-5"><span>Customer prefer - for intermediate<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-power-6"><span>Customer request this power<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-power-7"><span>Customer prefer KB<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-power-8"><span>CX - for clear<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-power-9"><span>CX - for comfortable<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip opt-none" for="r-power-10"><span>None<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <span class="addrow"><input type="text" class="addtext" placeholder="Add option..."><button type="button" class="addbtn">+</button></span>
     </div>
   </section>
   <section>
     <h2><span class="n">8</span> Eye / Health history</h2>
-    <div class="chips">
-      <label class="chip" for="r-eye-0"><span>ต้อลม</span></label>
-      <label class="chip" for="r-eye-1"><span>ต้อเนื้อ</span></label>
-      <label class="chip" for="r-eye-2"><span>ต้อหิน</span></label>
-      <label class="chip" for="r-eye-3"><span>ต้อกระจก</span></label>
-      <label class="chip" for="r-eye-4"><span>จอประสาทตาเสื่อม</span></label>
-      <label class="chip" for="r-eye-5"><span>ตาแดง/เยื่อบุตาอักเสบ</span></label>
-      <label class="chip" for="r-eye-6"><span>ความดันโลหิตสูง</span></label>
-      <label class="chip" for="r-eye-7"><span>เบาหวาน</span></label>
-      <label class="chip" for="r-eye-8"><span>ตาบอดสี</span></label>
-      <label class="chip" for="r-eye-9"><span>วุ้นในตาเสื่อม</span></label>
-      <label class="chip" for="r-eye-10"><span>เส้นเลือดฝอยใต้เยื่อบุตาขาวแตก</span></label>
-      <label class="chip" for="r-eye-11"><span>ค่าสายตาต่างกันเกิน 0.50D</span></label>
-      <label class="chip" for="r-eye-12"><span>กระจกตาโปน</span></label>
-      <label class="chip" for="r-eye-13"><span>ตาเขซ่อนเร้น</span></label>
+    <div class="chips" data-group="eye">
+      <label class="chip" for="r-eye-0"><span>ต้อลม<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-1"><span>ต้อเนื้อ<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-2"><span>ต้อหิน<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-3"><span>ต้อกระจก<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-4"><span>จอประสาทตาเสื่อม<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-5"><span>ตาแดง/เยื่อบุตาอักเสบ<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-6"><span>ความดันโลหิตสูง<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-7"><span>เบาหวาน<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-8"><span>ตาบอดสี<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-9"><span>วุ้นในตาเสื่อม<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-10"><span>เส้นเลือดฝอยใต้เยื่อบุตาขาวแตก<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-11"><span>ค่าสายตาต่างกันเกิน 0.50D<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-12"><span>กระจกตาโปน<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-eye-13"><span>ตาเขซ่อนเร้น<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <span class="addrow"><input type="text" class="addtext" placeholder="Add option..."><button type="button" class="addbtn">+</button></span>
     </div>
   </section>
   <section>
     <h2><span class="n">9</span> Remark</h2>
-    <div class="chips">
-      <label class="chip" for="r-foptype-0"><span>FOP</span></label>
-      <label class="chip" for="r-foptype-1"><span>Follow Rx</span></label>
+    <div class="chips" data-group="foptype">
+      <label class="chip" for="r-foptype-0"><span>FOP<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-foptype-1"><span>Follow Rx<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <span class="addrow"><input type="text" class="addtext" placeholder="Add option..."><button type="button" class="addbtn">+</button></span>
     </div>
     <p class="sub">FOP by</p>
-    <div class="chips">
-      <label class="chip" for="r-fop-0"><span>Folk</span></label>
-      <label class="chip" for="r-fop-1"><span>Jack</span></label>
-      <label class="chip" for="r-fop-2"><span>Fah</span></label>
-      <label class="chip" for="r-fop-3"><span>Sab</span></label>
-      <label class="chip" for="r-fop-4"><span>Ploy</span></label>
-      <label class="chip" for="r-fop-5"><span>Mud</span></label>
-      <label class="chip" for="r-fop-6"><span>NF</span></label>
-      <label class="chip opt-none" for="r-fop-7"><span>None</span></label>
+    <div class="chips" data-group="fop">
+      <label class="chip" for="r-fop-0"><span>Folk<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-fop-1"><span>Jack<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-fop-2"><span>Fah<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-fop-3"><span>Sab<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-fop-4"><span>Ploy<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-fop-5"><span>Mud<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-fop-6"><span>NF<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip opt-none" for="r-fop-7"><span>None<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <span class="addrow"><input type="text" class="addtext" placeholder="Add option..."><button type="button" class="addbtn">+</button></span>
     </div>
     <p class="sub">Recheck by</p>
-    <div class="chips">
-      <label class="chip" for="r-recheck-0"><span>Folk</span></label>
-      <label class="chip" for="r-recheck-1"><span>Jack</span></label>
-      <label class="chip" for="r-recheck-2"><span>Fah</span></label>
-      <label class="chip" for="r-recheck-3"><span>Sab</span></label>
-      <label class="chip" for="r-recheck-4"><span>Ploy</span></label>
-      <label class="chip" for="r-recheck-5"><span>Mud</span></label>
-      <label class="chip" for="r-recheck-6"><span>NF</span></label>
-      <label class="chip opt-none" for="r-recheck-7"><span>None</span></label>
+    <div class="chips" data-group="recheck">
+      <label class="chip" for="r-recheck-0"><span>Folk<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-recheck-1"><span>Jack<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-recheck-2"><span>Fah<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-recheck-3"><span>Sab<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-recheck-4"><span>Ploy<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-recheck-5"><span>Mud<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip" for="r-recheck-6"><span>NF<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <label class="chip opt-none" for="r-recheck-7"><span>None<button type="button" class="rm" aria-label="remove">&times;</button></span></label>
+      <span class="addrow"><input type="text" class="addtext" placeholder="Add option..."><button type="button" class="addbtn">+</button></span>
     </div>
   </section>
 
@@ -2111,12 +2141,21 @@ document.documentElement.className="js";
     return clean(parts.join(" / "));
   }
   var box=document.getElementById("outText"), form=document.getElementById("f");
+  var MULTI_GROUPS=["eye"];
 
+  function syncHighlight(){
+    var els=form.querySelectorAll('input[type="radio"], input[type="checkbox"]');
+    for(var i=0;i<els.length;i++){
+      var lab=document.querySelector('label[for="'+els[i].id+'"]');
+      if(lab){ if(els[i].checked) lab.classList.add("sel"); else lab.classList.remove("sel"); }
+    }
+  }
   function sync(){
     box.value=text();
     box.rows=1;
     box.rows=Math.min(6,Math.max(1,Math.ceil(box.scrollHeight/26)));
     btn.textContent="Copy line"; btn.className="copy";
+    syncHighlight();
   }
   function flash(m){ btn.textContent=m; btn.className="copy done";
     setTimeout(function(){ btn.textContent="Copy line"; btn.className="copy"; },1400); }
@@ -2153,6 +2192,117 @@ document.documentElement.className="js";
       sync();
     });
   }
+
+  /* ---- edit mode: add / remove chips, saved in this browser only ---- */
+  var STORE_KEY="cr2_custom_v1";
+  function loadCustom(){
+    try{
+      var d=JSON.parse(localStorage.getItem(STORE_KEY)||"");
+      if(d && d.removed && d.added) return d;
+    }catch(e){}
+    return {removed:[],added:{}};
+  }
+  function saveCustom(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(CUSTOM)); }catch(e){} }
+  var CUSTOM=loadCustom();
+
+  function addOption(g,txt,idOverride){
+    txt=(txt||"").trim();
+    if(!txt) return;
+    var id=idOverride || ("r-"+g+"-c"+Date.now().toString(36)+Math.random().toString(36).slice(2,5));
+    var isMulti=MULTI_GROUPS.indexOf(g)>=0;
+    var inp=document.createElement("input");
+    inp.type=isMulti?"checkbox":"radio";
+    inp.name=g; inp.id=id;
+    inp.style.position="absolute"; inp.style.opacity="0";
+    inp.style.width="0"; inp.style.height="0"; inp.style.pointerEvents="none";
+    form.insertBefore(inp, form.firstChild);
+
+    var lab=document.createElement("label");
+    lab.className="chip";
+    lab.setAttribute("for",id);
+    var span=document.createElement("span");
+    span.appendChild(document.createTextNode(txt));
+    var rm=document.createElement("button");
+    rm.type="button"; rm.className="rm"; rm.setAttribute("aria-label","remove");
+    rm.textContent="\u00d7";
+    span.appendChild(rm);
+    lab.appendChild(span);
+
+    var wrap=document.querySelector('.chips[data-group="'+g+'"]');
+    var addRow=wrap ? wrap.querySelector(".addrow") : null;
+    if(wrap){ wrap.insertBefore(lab, addRow); }
+
+    OPTS[id]=txt;
+    if(!idOverride){
+      if(!CUSTOM.added[g]) CUSTOM.added[g]=[];
+      CUSTOM.added[g].push({id:id,text:txt});
+      saveCustom();
+    }
+    sync();
+  }
+
+  function removeOption(id){
+    var parts=id.split("-"), g=parts[1];
+    var arr=CUSTOM.added[g]||[];
+    var idx=-1;
+    for(var i=0;i<arr.length;i++){ if(arr[i].id===id){ idx=i; break; } }
+    if(idx>=0){ arr.splice(idx,1); }
+    else if(CUSTOM.removed.indexOf(id)===-1){ CUSTOM.removed.push(id); }
+    saveCustom();
+
+    var inp=document.getElementById(id);
+    var lab=document.querySelector('label[for="'+id+'"]');
+    var tok=document.getElementById("t-"+id);
+    if(inp) inp.parentNode.removeChild(inp);
+    if(lab) lab.parentNode.removeChild(lab);
+    if(tok) tok.parentNode.removeChild(tok);
+    delete OPTS[id];
+    sync();
+  }
+
+  form.addEventListener("click",function(ev){
+    var rmBtn = ev.target.closest ? ev.target.closest(".rm") : null;
+    if(rmBtn){
+      ev.preventDefault(); ev.stopPropagation();
+      var lab=rmBtn.closest("label");
+      if(lab){ removeOption(lab.getAttribute("for")); }
+      return;
+    }
+    var addBtn = ev.target.closest ? ev.target.closest(".addbtn") : null;
+    if(addBtn){
+      ev.preventDefault(); ev.stopPropagation();
+      var wrap=addBtn.closest(".chips");
+      var g=wrap.getAttribute("data-group");
+      var ti=wrap.querySelector(".addtext");
+      addOption(g, ti.value);
+      ti.value="";
+    }
+  });
+  form.addEventListener("keydown",function(ev){
+    if(ev.target && ev.target.classList && ev.target.classList.contains("addtext") && ev.key==="Enter"){
+      ev.preventDefault();
+      var wrap=ev.target.closest(".chips");
+      addOption(wrap.getAttribute("data-group"), ev.target.value);
+      ev.target.value="";
+    }
+  });
+
+  var editBtn=document.getElementById("editBtn");
+  editBtn.addEventListener("click",function(){
+    var on=document.documentElement.classList.toggle("editing");
+    editBtn.textContent = on ? "Done editing" : "Edit buttons";
+  });
+  document.getElementById("resetBtn").addEventListener("click",function(){
+    if(!confirm("Remove all your custom added/removed buttons on this device?")) return;
+    try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+    location.reload();
+  });
+
+  /* apply saved customizations from this browser */
+  CUSTOM.removed.slice().forEach(function(id){ removeOption(id); });
+  Object.keys(CUSTOM.added).forEach(function(g){
+    (CUSTOM.added[g]||[]).slice().forEach(function(o){ addOption(g,o.text,o.id); });
+  });
 
   sync();
 })();
